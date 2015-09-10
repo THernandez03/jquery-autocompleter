@@ -25,6 +25,7 @@
             'customLabel',
             'customValue',
             'customQuery',
+            'onBeforeSend',
             'template',
             'offset',
             'combine',
@@ -76,6 +77,7 @@
      * @param customLabel [boolean] <false> "The name of object's property which will be used as a label"
      * @param customValue [boolean] <false> "The name of object's property which will be used as a value"
      * @param customQuery [boolean] <false> "The name of query's name which will be used as a parameter"
+     * @param onBeforeSend [function] "This function is triggered before an ajax request"
      * @param template [(string|boolean)] <false> "Custom template for list items"
      * @param offset [(string|boolean)] <false> "Source response offset, for example: response.items.posts"
      * @param combine [function] <$.noop> "Returns an object which extends ajax data. Useful if you want to pass some additional server options"
@@ -100,6 +102,7 @@
         customLabel: false,
         customValue: false,
         customQuery: false,
+        onBeforeSend: function(){},
         template: false,
         offset: false,
         combine: $.noop,
@@ -419,6 +422,8 @@
                 beforeSend: function (xhr) {
                     data.$autocompleter.addClass('autocompleter-ajax');
                     _clear(data);
+
+                    data.onBeforeSend();
 
                     if (data.cache) {
                         var stored = _getCache(this.url, data.cacheExpires);
