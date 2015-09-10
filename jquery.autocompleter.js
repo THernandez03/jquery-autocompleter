@@ -30,6 +30,7 @@
             'onBeforeSend',
             'onBeforeShow',
             'onEmpty',
+            'onShowList',
             'template',
             'offset',
             'combine',
@@ -86,6 +87,7 @@
      * @param onBeforeSend [function] "This function is triggered before an ajax request"
      * @oaran onBeforeShow [function] "This function is triggerred when the list is ready to be shown"
      * @param onEmpty [function] "If data list if empty, trigger this function"
+     * @param onShowList [function] "This function is triggered when the list is shown"
      * @param template [(string|boolean)] <false> "Custom template for list items"
      * @param offset [(string|boolean)] <false> "Source response offset, for example: response.items.posts"
      * @param combine [function] <$.noop> "Returns an object which extends ajax data. Useful if you want to pass some additional server options"
@@ -115,6 +117,7 @@
         onBeforeSend: function(){},
         onBeforeShow: function(){},
         onEmpty: function(){},
+        onShowList: function(){},
         template: false,
         offset: false,
         combine: $.noop,
@@ -493,6 +496,8 @@
      */
     function _response(response, data) {
         _buildList(response, data);
+
+        data.onShowList(response);
 
         if (data.$autocompleter.hasClass('autocompleter-focus')) {
             _open(null, data);
