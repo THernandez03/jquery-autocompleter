@@ -747,7 +747,7 @@
     function _open(e, instanceData) {
         var data = e ? e.data : instanceData;
 
-        if (!data.$node.prop('disabled') && !data.$autocompleter.hasClass('autocompleter-show') && data.$list && data.$list.length) {
+        if (!data.$node.prop('disabled') && !data.$autocompleter.hasClass('autocompleter-show')) {
             data.$autocompleter.removeClass('autocompleter-closed').addClass('autocompleter-show');
             $body.on('click.autocompleter-' + data.guid, ':not(.autocompleter-item)', data, _closeHelper);
         }
