@@ -27,6 +27,7 @@
             'customValue',
             'customQuery',
             'eachItem',
+            'onBeforeSend',
             'template',
             'offset',
             'combine',
@@ -80,6 +81,7 @@
      * @param customValue [boolean] <false> "The name of object's property which will be used as a value"
      * @param customQuery [boolean] <false> "The name of query's name which will be used as a parameter"
      * @param eachItem [function] "This function is triggered when each item is being prepared to be shown"
+     * @param onBeforeSend [function] "This function is triggered before an ajax request"
      * @param template [(string|boolean)] <false> "Custom template for list items"
      * @param offset [(string|boolean)] <false> "Source response offset, for example: response.items.posts"
      * @param combine [function] <$.noop> "Returns an object which extends ajax data. Useful if you want to pass some additional server options"
@@ -106,6 +108,7 @@
         customValue: false,
         customQuery: false,
         eachItem: function(){},
+        onBeforeSend: function(){},
         template: false,
         offset: false,
         combine: $.noop,
@@ -425,6 +428,8 @@
                 beforeSend: function (xhr) {
                     data.$autocompleter.addClass('autocompleter-ajax');
                     _clear(data);
+
+                    data.onBeforeSend();
 
                     if (data.cache) {
                         var stored = _getCache(this.url, data.cacheExpires);
