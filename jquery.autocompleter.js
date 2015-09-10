@@ -13,6 +13,7 @@
         ignoredKeyCode = [9, 13, 17, 19, 20, 27, 33, 34, 35, 36, 37, 39, 44, 92, 113, 114, 115, 118, 119, 120, 122, 123, 144, 145],
         allowOptions = [
             'source',
+            'persistentData',
             'empty',
             'limit',
             'cache',
@@ -65,6 +66,7 @@
      *
      * @options
      * @param source [(string|object)] <null> "URL to the server or a local object"
+     * @param persistentData [array] <[]> "This able to set an array of data with no ajax request"
      * @param asLocal [boolean] <false> "Parse remote response as local source"
      * @param empty [boolean] <true> "Launch if value is empty"
      * @param limit [int] <10> "Number of results to be displayed"
@@ -95,6 +97,7 @@
      */
     var options = {
         source: null,
+        persistentData: [],
         asLocal: false,
         empty: true,
         limit: 10,
@@ -345,23 +348,25 @@
         if (source.length) {
             for (var i = 0; i < 2; i++) {
                 for (var item in source) {
-                    if (response.length < data.limit) {
-                        var label = (data.customLabel && source[item][data.customLabel]) ? source[item][data.customLabel] : source[item].label;
+                    if (source.hasOwnProperty(item)) {
+                        if (data.persistentData || (response.length < data.limit)) {
+                            var label = (data.customLabel && source[item][data.customLabel]) ? source[item][data.customLabel] : source[item].label;
 
-                        switch (i) {
-                        case 0:
-                            if (label.toUpperCase().search(query) === 0) {
-                                response.push(source[item]);
-                                delete source[item];
-                            }
-                            break;
+                            switch (i) {
+                            case 0:
+                                if (label.toUpperCase().search(query) === 0) {
+                                    response.push(source[item]);
+                                    delete source[item];
+                                }
+                                break;
 
-                        case 1:
-                            if (label.toUpperCase().search(query) !== -1) {
-                                response.push(source[item]);
-                                delete source[item];
+                            case 1:
+                                if (label.toUpperCase().search(query) !== -1) {
+                                    response.push(source[item]);
+                                    delete source[item];
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
                 }
@@ -435,6 +440,7 @@
                 crossDomain: true,
                 data:       ajaxData,
                 beforeSend: function (xhr) {
+                    var search = [];
                     data.$autocompleter.addClass('autocompleter-ajax');
                     _clear(data);
 
@@ -451,9 +457,16 @@
                 }
             })
             .done(function (response) {
+                var search = [];
+
                 // Get subobject from responce
                 if (data.offset) {
                     response = _grab(response, data.offset);
+                }
+
+                if(data.persistentData){
+                    search = _search(data.query, _clone(data.persistentData), data);
+                    response = search.concat(response);
                 }
 
                 // Set cache
