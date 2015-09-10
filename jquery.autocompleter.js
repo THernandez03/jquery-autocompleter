@@ -28,6 +28,7 @@
             'customQuery',
             'eachItem',
             'onBeforeSend',
+            'onBeforeShow',
             'template',
             'offset',
             'combine',
@@ -82,6 +83,7 @@
      * @param customQuery [boolean] <false> "The name of query's name which will be used as a parameter"
      * @param eachItem [function] "This function is triggered when each item is being prepared to be shown"
      * @param onBeforeSend [function] "This function is triggered before an ajax request"
+     * @oaran onBeforeShow [function] "This function is triggerred when the list is ready to be shown"
      * @param template [(string|boolean)] <false> "Custom template for list items"
      * @param offset [(string|boolean)] <false> "Source response offset, for example: response.items.posts"
      * @param combine [function] <$.noop> "Returns an object which extends ajax data. Useful if you want to pass some additional server options"
@@ -109,6 +111,7 @@
         customQuery: false,
         eachItem: function(){},
         onBeforeSend: function(){},
+        onBeforeShow: function(){},
         template: false,
         offset: false,
         combine: $.noop,
@@ -564,6 +567,8 @@
             $(j).data(data.response[i]);
             data.eachItem(i, $(j), data.response[i]);
         });
+
+        data.onBeforeShow();
     }
 
     /**
