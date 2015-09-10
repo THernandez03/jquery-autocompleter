@@ -77,6 +77,7 @@ Autocompleter has the following options:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 | customQuery  | str | The name of query's name which will be used as a parameter | false |
 | eachItem | function | This function is triggered when each item is being prepared to be shown | function(){} |
 =======
@@ -88,6 +89,9 @@ Autocompleter has the following options:
 =======
 | onEmpty | function | If data list if empty, trigger this function | function(){} |
 >>>>>>> onEmpty
+=======
+| onShowList | function | This function is triggered when the list is shown | function(){} |
+>>>>>>> onShowList
 | template | str | Custom template for list items. For example: ``<span>{{ label }} is {{ customPropertyFromSource }}</span>``. Template appends to ``.autocompleter-item``. | false |
 | offset | str | Source response offset, for example: response.items.posts | false |
 | combine | function | Returns an object which extends ajax data. Useful if you want to pass some additional server options | $.noop |
