@@ -25,6 +25,7 @@
             'customLabel',
             'customValue',
             'customQuery',
+            'persistentData',
             'template',
             'offset',
             'combine',
@@ -76,6 +77,7 @@
      * @param customLabel [boolean] <false> "The name of object's property which will be used as a label"
      * @param customValue [boolean] <false> "The name of object's property which will be used as a value"
      * @param customQuery [boolean] <false> "The name of query's name which will be used as a parameter"
+     * @param persistentData [array] <[]> "This able to set an array of data with no ajax request"
      * @param template [(string|boolean)] <false> "Custom template for list items"
      * @param offset [(string|boolean)] <false> "Source response offset, for example: response.items.posts"
      * @param combine [function] <$.noop> "Returns an object which extends ajax data. Useful if you want to pass some additional server options"
@@ -100,6 +102,7 @@
         customLabel: false,
         customValue: false,
         customQuery: false,
+        persistentData: [],
         template: false,
         offset: false,
         combine: $.noop,
@@ -327,23 +330,25 @@
         if (source.length) {
             for (var i = 0; i < 2; i++) {
                 for (var item in source) {
-                    if (response.length < data.limit) {
-                        var label = (data.customLabel && source[item][data.customLabel]) ? source[item][data.customLabel] : source[item].label;
+                    if (source.hasOwnProperty(item)) {
+                        if (data.persistentData || (response.length < data.limit)) {
+                            var label = (data.customLabel && source[item][data.customLabel]) ? source[item][data.customLabel] : source[item].label;
 
-                        switch (i) {
-                        case 0:
-                            if (label.toUpperCase().search(query) === 0) {
-                                response.push(source[item]);
-                                delete source[item];
-                            }
-                            break;
+                            switch (i) {
+                            case 0:
+                                if (label.toUpperCase().search(query) === 0) {
+                                    response.push(source[item]);
+                                    delete source[item];
+                                }
+                                break;
 
-                        case 1:
-                            if (label.toUpperCase().search(query) !== -1) {
-                                response.push(source[item]);
-                                delete source[item];
+                            case 1:
+                                if (label.toUpperCase().search(query) !== -1) {
+                                    response.push(source[item]);
+                                    delete source[item];
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
                 }
@@ -417,6 +422,7 @@
                 crossDomain: true,
                 data:       ajaxData,
                 beforeSend: function (xhr) {
+                    var search = [];
                     data.$autocompleter.addClass('autocompleter-ajax');
                     _clear(data);
 
@@ -431,9 +437,16 @@
                 }
             })
             .done(function (response) {
+                var search = [];
+
                 // Get subobject from responce
                 if (data.offset) {
                     response = _grab(response, data.offset);
+                }
+
+                if(data.persistentData){
+                    search = _search(data.query, _clone(data.persistentData), data);
+                    response = search.concat(response);
                 }
 
                 // Set cache
