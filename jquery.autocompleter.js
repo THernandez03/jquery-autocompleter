@@ -25,6 +25,7 @@
             'customLabel',
             'customValue',
             'customQuery',
+            'onEmpty',
             'template',
             'offset',
             'combine',
@@ -76,6 +77,7 @@
      * @param customLabel [boolean] <false> "The name of object's property which will be used as a label"
      * @param customValue [boolean] <false> "The name of object's property which will be used as a value"
      * @param customQuery [boolean] <false> "The name of query's name which will be used as a parameter"
+     * @param onEmpty [function] "If data list if empty, trigger this function"
      * @param template [(string|boolean)] <false> "Custom template for list items"
      * @param offset [(string|boolean)] <false> "Source response offset, for example: response.items.posts"
      * @param combine [function] <$.noop> "Returns an object which extends ajax data. Useful if you want to pass some additional server options"
@@ -100,6 +102,7 @@
         customLabel: false,
         customValue: false,
         customQuery: false,
+        onEmpty: function(){},
         template: false,
         offset: false,
         combine: $.noop,
@@ -552,6 +555,10 @@
         data.$autocompleter.find('.autocompleter-item').each(function (i, j) {
             $(j).data(data.response[i]);
         });
+
+        if(!list.length){
+            data.onEmpty();
+        }
     }
 
     /**
