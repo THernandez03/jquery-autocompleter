@@ -341,7 +341,12 @@
      * @param data [object] "Instance data"
      */
     function _search(query, source, data) {
-        var response = [];
+        var response = [], persistentData;
+
+        persistentData = data.persistentData;
+        if(typeof persistentData === 'function'){
+            persistentData = persistentData();
+        }
 
         query = query.toUpperCase();
 
@@ -349,7 +354,7 @@
             for (var i = 0; i < 2; i++) {
                 for (var item in source) {
                     if (source.hasOwnProperty(item)) {
-                        if (data.persistentData || (response.length < data.limit)) {
+                        if (persistentData.length || (response.length < data.limit)) {
                             var label = (data.customLabel && source[item][data.customLabel]) ? source[item][data.customLabel] : source[item].label;
 
                             switch (i) {
@@ -457,15 +462,20 @@
                 }
             })
             .done(function (response) {
-                var search = [];
+                var search = [], persistentData;
+
+                persistentData = data.persistentData;
+                if(typeof persistentData === 'function'){
+                    persistentData = persistentData();
+                }
 
                 // Get subobject from responce
                 if (data.offset) {
                     response = _grab(response, data.offset);
                 }
 
-                if(data.persistentData){
-                    search = _search(data.query, _clone(data.persistentData), data);
+                if(persistentData.length){
+                    search = _search(data.query, _clone(persistentData), data);
                     response = search.concat(response);
                 }
 
