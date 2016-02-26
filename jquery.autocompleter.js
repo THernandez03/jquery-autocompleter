@@ -356,7 +356,9 @@
                     if (source.hasOwnProperty(item)) {
                         if (persistentData.length || (response.length < data.limit)) {
                             var label = (data.customLabel && source[item][data.customLabel]) ? source[item][data.customLabel] : source[item].label;
-
+                            if(!label){
+                              continue;
+                            }
                             switch (i) {
                             case 0:
                                 if (label.toUpperCase().search(query) === 0) {
