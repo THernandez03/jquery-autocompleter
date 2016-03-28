@@ -1,9 +1,9 @@
 /*
- * jquery-autocompleter v0.1.10 - 2015-01-22
+ * jquery-autocompleter v0.1.10 - 2016-03-28
  * Simple, easy, customisable and with localStorage cache support.
  * http://github.com/ArtemFitiskin/jquery-autocompleter
  *
- * Copyright 2015 Artem Fitiskin; MIT Licensed
+ * Copyright 2016 Artem Fitiskin; MIT Licensed
  */
 
 ;(function ($, window) {
@@ -13,25 +13,17 @@
         ignoredKeyCode = [9, 13, 17, 19, 20, 27, 33, 34, 35, 36, 37, 39, 44, 92, 113, 114, 115, 118, 119, 120, 122, 123, 144, 145],
         allowOptions = [
             'source',
-            'persistentData',
             'empty',
             'limit',
             'cache',
             'cacheExpires',
             'focusOpen',
             'selectFirst',
-            'noSelect',
             'changeWhenSelect',
             'highlightMatches',
             'ignoredKeyCode',
             'customLabel',
             'customValue',
-            'customQuery',
-            'eachItem',
-            'onBeforeSend',
-            'onBeforeShow',
-            'onEmpty',
-            'onShowList',
             'template',
             'offset',
             'combine',
@@ -66,7 +58,6 @@
      *
      * @options
      * @param source [(string|object)] <null> "URL to the server or a local object"
-     * @param persistentData [array] <[]> "This able to set an array of data with no ajax request"
      * @param asLocal [boolean] <false> "Parse remote response as local source"
      * @param empty [boolean] <true> "Launch if value is empty"
      * @param limit [int] <10> "Number of results to be displayed"
@@ -78,18 +69,11 @@
      * @param focusOpen [boolean] <true> "Launch autocompleter when input gets focus"
      * @param hint [boolean] <false> "Add hint to input with first matched label, correct styles should be installed"
      * @param selectFirst [boolean] <false> "If set to true, first element in autocomplete list will be selected automatically, ignore if changeWhenSelect is on"
-     * @param noSelect [boolean] <false> "If set to true, the item is not selected when you click on"
      * @param changeWhenSelect [boolean] <true> "Allows to change input value using arrow keys navigation in autocomplete list"
      * @param highlightMatches [boolean] <false> "This option defines <strong> tag wrap for matches in autocomplete results"
      * @param ignoredKeyCode [array] <[]> "Array with ignorable keycodes"
      * @param customLabel [boolean] <false> "The name of object's property which will be used as a label"
      * @param customValue [boolean] <false> "The name of object's property which will be used as a value"
-     * @param customQuery [boolean] <false> "The name of query's name which will be used as a parameter"
-     * @param eachItem [function] "This function is triggered when each item is being prepared to be shown"
-     * @param onBeforeSend [function] "This function is triggered before an ajax request"
-     * @oaran onBeforeShow [function] "This function is triggerred when the list is ready to be shown"
-     * @param onEmpty [function] "If data list if empty, trigger this function"
-     * @param onShowList [function] "This function is triggered when the list is shown"
      * @param template [(string|boolean)] <false> "Custom template for list items"
      * @param offset [(string|boolean)] <false> "Source response offset, for example: response.items.posts"
      * @param combine [function] <$.noop> "Returns an object which extends ajax data. Useful if you want to pass some additional server options"
@@ -97,7 +81,6 @@
      */
     var options = {
         source: null,
-        persistentData: [],
         asLocal: false,
         empty: true,
         limit: 10,
@@ -109,18 +92,11 @@
         focusOpen: true,
         hint: false,
         selectFirst: false,
-        noSelect: false,
         changeWhenSelect: true,
         highlightMatches: false,
         ignoredKeyCode: [],
         customLabel: false,
         customValue: false,
-        customQuery: false,
-        eachItem: function(){},
-        onBeforeSend: function(){},
-        onBeforeShow: function(){},
-        onEmpty: function(){},
-        onShowList: function(){},
         template: false,
         offset: false,
         combine: $.noop,
@@ -341,39 +317,30 @@
      * @param data [object] "Instance data"
      */
     function _search(query, source, data) {
-        var response = [], persistentData;
-
-        persistentData = data.persistentData;
-        if(typeof persistentData === 'function'){
-            persistentData = persistentData();
-        }
+        var response = [];
 
         query = query.toUpperCase();
 
         if (source.length) {
             for (var i = 0; i < 2; i++) {
                 for (var item in source) {
-                    if (source.hasOwnProperty(item)) {
-                        if (persistentData.length || (response.length < data.limit)) {
-                            var label = (data.customLabel && source[item][data.customLabel]) ? source[item][data.customLabel] : source[item].label;
-                            if(!label){
-                              continue;
-                            }
-                            switch (i) {
-                            case 0:
-                                if (label.toUpperCase().search(query) === 0) {
-                                    response.push(source[item]);
-                                    delete source[item];
-                                }
-                                break;
+                    if (response.length < data.limit) {
+                        var label = (data.customLabel && source[item][data.customLabel]) ? source[item][data.customLabel] : source[item].label;
 
-                            case 1:
-                                if (label.toUpperCase().search(query) !== -1) {
-                                    response.push(source[item]);
-                                    delete source[item];
-                                }
-                                break;
+                        switch (i) {
+                        case 0:
+                            if (label.toUpperCase().search(query) === 0) {
+                                response.push(source[item]);
+                                delete source[item];
                             }
+                            break;
+
+                        case 1:
+                            if (label.toUpperCase().search(query) !== -1) {
+                                response.push(source[item]);
+                                delete source[item];
+                            }
+                            break;
                         }
                     }
                 }
@@ -425,21 +392,14 @@
                 _response(search, data);
             }
         } else {
-            var extend = {
-                limit: data.limit
-            };
-
             if (data.jqxhr) {
                 data.jqxhr.abort();
             }
 
-            if(data.customQuery){
-                extend[data.customQuery] = data.query;
-            }else{
-                extend.query = data.query;
-            }
-
-            var ajaxData = $.extend(extend, data.combine(data.query));
+            var ajaxData = $.extend({
+                limit: data.limit,
+                query: data.query
+            }, data.combine(data.query));
 
             data.jqxhr = $.ajax({
                 url:        data.source,
@@ -447,11 +407,8 @@
                 crossDomain: true,
                 data:       ajaxData,
                 beforeSend: function (xhr) {
-                    var search = [];
                     data.$autocompleter.addClass('autocompleter-ajax');
                     _clear(data);
-
-                    data.onBeforeSend();
 
                     if (data.cache) {
                         var stored = _getCache(this.url, data.cacheExpires);
@@ -464,21 +421,9 @@
                 }
             })
             .done(function (response) {
-                var search = [], persistentData;
-
-                persistentData = data.persistentData;
-                if(typeof persistentData === 'function'){
-                    persistentData = persistentData();
-                }
-
                 // Get subobject from responce
                 if (data.offset) {
                     response = _grab(response, data.offset);
-                }
-
-                if(persistentData.length){
-                    search = _search(data.query, _clone(persistentData), data);
-                    response = search.concat(response);
                 }
 
                 // Set cache
@@ -521,8 +466,6 @@
      */
     function _response(response, data) {
         _buildList(response, data);
-
-        data.onShowList(response);
 
         if (data.$autocompleter.hasClass('autocompleter-focus')) {
             _open(null, data);
@@ -598,13 +541,7 @@
         data.index = data.$selected ? data.$list.index(data.$selected) : -1;
         data.$autocompleter.find('.autocompleter-item').each(function (i, j) {
             $(j).data(data.response[i]);
-            data.eachItem(i, $(j), data.response[i]);
         });
-
-        data.onBeforeShow();
-        if(!list.length){
-            data.onEmpty();
-        }
     }
 
     /**
@@ -793,7 +730,7 @@
     function _open(e, instanceData) {
         var data = e ? e.data : instanceData;
 
-        if (!data.$node.prop('disabled') && !data.$autocompleter.hasClass('autocompleter-show')) {
+        if (!data.$node.prop('disabled') && !data.$autocompleter.hasClass('autocompleter-show') && data.$list && data.$list.length) {
             data.$autocompleter.removeClass('autocompleter-closed').addClass('autocompleter-show');
             $body.on('click.autocompleter-' + data.guid, ':not(.autocompleter-item)', data, _closeHelper);
         }
@@ -850,7 +787,7 @@
 
         if (e.type === 'mousedown' && $(this).length) {
             data.$selected = $(this);
-            data.index = $(this).index();
+            data.index = data.$list.index(data.$selected);
         }
 
         if (!data.$node.prop('disabled')) {
@@ -903,9 +840,7 @@
      * @param data [object] "Instance data"
      */
     function _update(data) {
-        if(!data.noSelect){
-            _setValue(data);
-        }
+        _setValue(data);
         _handleChange(data);
         _clear(data);
     }
